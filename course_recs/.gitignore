@@ -3,6 +3,7 @@
 
 # Игнорировать виртуальное окружение
 venv/
+recsys_venv/
 env/
 .vscode/
 .venv/
