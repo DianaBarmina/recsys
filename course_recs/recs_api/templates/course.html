@@ -12,12 +12,23 @@
                     <li><strong>Платформа:</strong> {{ course.platform.name }}</li>
                     <li><strong>Язык:</strong> {{ course.language }}</li>
                     <li><strong>Нагрузка:</strong> {{ course.workload }}</li>
-                    <li><strong>Ссылка:</strong> <a href="{{ course.canonical_url }}" target="_blank">{{ course.canonical_url }}</a></li>
                     <li><strong>Дата публикации:</strong> {{ course.became_published_at|date:"d.m.Y H:i" }}</li>
                     <li><strong>Время на прохождение:</strong> {{ course.time_to_complete }} часов</li>
                     <li><strong>Платный:</strong> {% if course.is_paid %}Да{% else %}Нет{% endif %}</li>
                     <li><strong>Категория:</strong> {{ course.category }}</li>
                 </ul>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary">Сохранить</a>
+                {% endif %}
+
+                <!-- Кнопка "К курсам" -->
+                <div class="container-fluid mt-3">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a href="{% url 'home' %}" class="btn btn-dark">К курсам</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -30,7 +41,7 @@
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h2 class="card-title">{{ course.title }}</h2>
+                                <h2 class="card-title"> <a href="{{ course.canonical_url }}"> {{ course.title }}</h2></a>
                             </div>
                         </div>
                     </div>
@@ -61,12 +72,4 @@
     </div>
 </div>
 
-<!-- Кнопка "К курсам" -->
-<div class="container-fluid mt-3">
-    <div class="row">
-        <div class="col-md-12 text-center">
-            <a href="{% url 'home' %}" class="btn btn-dark">К курсам</a>
-        </div>
-    </div>
-</div>
 {% endblock %}
