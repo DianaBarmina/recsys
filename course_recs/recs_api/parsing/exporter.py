@@ -120,9 +120,9 @@ def export_users(df):
 
 
 if __name__ == "__main__":
-
     courses = pd.read_csv('df/courses_export.csv')
-    #export_courses(courses)
+    export_courses(courses)
 
-    #reviews = pd.read_csv('df/reviews_export.csv')
-    #export_users(reviews)
+    reviews = pd.read_csv('df/reviews_export.csv')
+    reviews['score'] /= 5
+    export_users(reviews)
