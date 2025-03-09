@@ -1,20 +1,20 @@
-{% extends 'base.html' %}  <!-- Если у вас есть базовый шаблон -->
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Левая часть (25%) - Фильтрация и сортировка -->
+        <!-- Левая часть (Фильтры) -->
         <div class="col-3 p-3 border-end">
             <div class="container">
                 <h5>Фильтры и сортировка</h5>
                 <form method="get" action="{% url 'home' %}">
-                    <!-- Поиск по названию -->
+                    <!-- Поле поиска -->
                     <div class="mb-3">
                         <label for="search" class="form-label">Поиск по названию:</label>
                         <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}">
                     </div>
 
-                    <!-- Фильтр по категориям (множественный выбор) -->
+                    <!-- Фильтр по категориям -->
                     <div class="mb-3">
                         <label for="category" class="form-label">Категории:</label>
                         <select name="category" id="category" class="form-select" multiple>
@@ -26,7 +26,7 @@
                         </select>
                     </div>
 
-                    <!-- Фильтр по платформам (множественный выбор) -->
+                    <!-- Фильтр по платформам -->
                     <div class="mb-3">
                         <label for="platform" class="form-label">Платформы:</label>
                         <select name="platform" id="platform" class="form-select" multiple>
@@ -38,23 +38,29 @@
                         </select>
                     </div>
 
-                    <!-- Кнопка для применения фильтров -->
                     <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                    <br><br>
+                    <a href="?reset=true">
+                        <button type="button" class="btn btn-danger">Сбросить фильтры</button>
+                    </a>
                 </form>
             </div>
         </div>
 
-        <!-- Правая часть (75%) - Список курсов -->
+        <!-- Правая часть (Список курсов) -->
         <div class="col-9 p-3">
             <div class="container">
                 <h1>Все курсы</h1>
-                <ul class="list-unstyled">
-                    {% for course in courses %}
-                        <div class="card mb-3">
-                            <div class="row g-0">
-                                <div class="card-body">
+                <br/>
+                <div class="row">
+                    {% for course in page_obj %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 d-flex flex-column">
+                                <div class="card-body flex-grow-1">
                                     <h5 class="card-title">{{ course.title }}</h5>
                                     <p class="card-text">{{ course.summary }}</p>
+                                </div>
+                                <div class="card-footer">
                                     <a href="{% url 'course' course.pk %}" class="btn btn-primary">Посмотреть</a>
                                     {% if user.is_authenticated %}
                                         <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary">Сохранить</a>
@@ -62,29 +68,71 @@
                                 </div>
                             </div>
                         </div>
+                        {% if forloop.counter|divisibleby:3 %}
+                            </div><div class="row">
+                        {% endif %}
                     {% endfor %}
-                </ul>
+                </div>
+
+                <!-- Пагинация -->
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="Первая">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Предыдущая">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Следующая">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Последняя">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Добавляем вертикальную линию между колонками */
     .border-end {
-        border-right: 1px solid #dee2e6; /* Цвет линии */
-        padding-right: 20px; /* Отступ от линии для левой части */
+        border-right: 1px solid #dee2e6;
+        padding-right: 20px;
     }
-
-    /* Отступ от линии для правой части */
     .col-9 {
         padding-left: 20px;
     }
-
-    /* Убираем лишние отступы у контейнеров */
-    .container {
-        padding-left: 0;
-        padding-right: 0;
+    .card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .card-footer {
+        background-color: transparent;
+        border-top: none;
+        padding: 1rem;
+        margin-top: auto; /* Кнопки будут прижаты к низу */
     }
 </style>
 {% endblock %}
