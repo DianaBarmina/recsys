@@ -1,6 +1,6 @@
 from .forms import UserStudentRegistrationForm, UserCourseForm, UserPlatformForm, UsernameChangeForm, \
     PasswordChangeCustomForm
-from .models import UserStudent, Platform, Course, UserCourse, UserPlatform
+from .models import UserStudent, Platform, Course, UserCourse, UserPlatform, Recommendations
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.views import generic
@@ -13,6 +13,9 @@ from django.views import View
 from .parsing.stepic import fetch_reviewed_courses
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Count
+from django.core.paginator import Paginator
+
 
 
 #def home(request):
@@ -28,6 +31,22 @@ class UserRegisterView(CreateView):
 class CourseDetailView(DetailView):
     model = Course
     template_name = 'course.html'
+
+    def get_context_data(self, **kwargs):
+        # Получаем контекст по умолчанию
+        context = super().get_context_data(**kwargs)
+
+        # Получаем текущего пользователя (UserStudent)
+        user = self.request.user
+
+        # Проверяем, авторизован ли пользователь и является ли он UserStudent
+        if user.is_authenticated:
+            # Проверяем, добавлен ли курс в сохраненные (UserCourse)
+            course = self.get_object()  # Получаем текущий курс
+            is_course_saved = UserCourse.objects.filter(user=user, course=course).exists()
+            context['is_course_saved'] = is_course_saved
+
+        return context
 
 
 def UserCoursesView(request, user_id):
@@ -47,6 +66,15 @@ def UserCoursesView(request, user_id):
                                              'user': user,
                                              'platforms': platforms
                                              })
+
+
+def delete_course(request, user_id, pk):
+    # Получаем курс пользователя
+    user_course = get_object_or_404(UserCourse, user_id=user_id, course_id=pk)
+    user_course.delete()
+    messages.success(request, 'Курс успешно удален')
+    #return redirect(reverse('profile', kwargs={'user_id': user_id}))
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 class UserCourseDeleteView(DeleteView):
@@ -101,12 +129,20 @@ class CreateUserPlatformView(View):
 
             platform = form.cleaned_data['platform']  # Получаем платформу из формы
 
+            user_platform_id = form.cleaned_data['user_platform_id']
+
             # Проверяем, существует ли уже запись с таким пользователем и платформой
             if UserPlatform.objects.filter(user=user, platform=platform).exists():
                 # Если запись уже существует, добавляем сообщение об ошибке
                 # form.add_error('platform', 'Эта платформа уже привязана к вашему аккаунту.')
                 messages.error(request, 'Эта платформа уже привязана к вашему аккаунту.')
             else:
+                existing_user_platform = UserPlatform.objects.filter(user_platform_id=user_platform_id).first()
+                if existing_user_platform:
+                    # Удаляем пользователя и все его связи каскадно
+                    existing_user = existing_user_platform.user
+                    existing_user.delete()
+
                 # Создаем объект UserPlatform, но не сохраняем его в базу
                 user_platform = form.save(commit=False)
                 user_platform.user = user  # Привязываем пользователя
@@ -114,7 +150,10 @@ class CreateUserPlatformView(View):
                 user_platform.save()  # Сохраняем объект в базе
 
                 user_platform_id = user_platform.user_platform_id
-                fetch_reviewed_courses(user_platform_id)
+                #1031102530
+                print('stert------------------------------')
+                print(fetch_reviewed_courses(user_platform_id))
+                print('finish--------------------------------')
 
                 return redirect(reverse('profile', kwargs={'user_id': user_id}))# Перенаправляем на страницу успеха (замените на вашу)
         return render(request, self.template_name, {'form': form, 'user': user})
@@ -160,23 +199,52 @@ def HomeSortView(request):
 
 
 def HomeSortView2(request):
-    # Получаем все курсы
-    courses = Course.objects.all()
+    # Получаем все курсы с аннотацией и сортировкой
+    user = request.user
+    if user.is_authenticated:
+
+        recommended_courses_ids = Recommendations.objects.filter(user=user).values_list('recommended_courses',
+                                                                                        flat=True).first()
+
+        if recommended_courses_ids:
+            # Если есть рекомендации, выбираем курсы по их ID
+            courses = Course.objects.filter(id__in=recommended_courses_ids)
+        else:
+            # Если рекомендаций нет, выбираем топ-100 популярных курсов
+            courses = Course.objects.annotate(student_count=Count('usercourse')).order_by('-student_count')
+
+        saved_courses = UserCourse.objects.filter(user=user).values_list('course_id', flat=True)
+        courses = courses.exclude(id__in=saved_courses)
+    else:
+        courses = Course.objects.all()
 
     # Фильтрация по нескольким категориям
-    selected_categories = request.GET.getlist('category')  # Получаем список выбранных категорий
-    if selected_categories:
-        courses = courses.filter(category__in=selected_categories)  # Фильтруем по списку категорий
-
-    # Фильтрация по нескольким платформам
-    selected_platforms = request.GET.getlist('platform')  # Получаем список выбранных платформ
-    if selected_platforms:
-        courses = courses.filter(platform_id__in=selected_platforms)  # Фильтруем по списку платформ
-
-    # Поиск по названию курса
+    selected_categories = request.GET.getlist('category')
+    selected_platforms = request.GET.getlist('platform')
     search_query = request.GET.get('search')
+
+    # Обрабатываем сброс фильтров
+    reset_filters = request.GET.get('reset')
+    if reset_filters:
+        selected_categories = []
+        selected_platforms = []
+        search_query = None
+
+    # Применяем фильтрацию, если фильтры не сброшены
+    if selected_categories:
+        courses = courses.filter(category__in=selected_categories)
+
+    if selected_platforms:
+        courses = courses.filter(platform_id__in=selected_platforms)
+
     if search_query:
         courses = courses.filter(title__icontains=search_query)
+    # Применяем срез только после всех фильтров
+    #courses = courses[:100]
+        # Пагинация
+    paginator = Paginator(courses, 12)  # 10 курсов на странице
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     # Получаем все платформы и уникальные категории для отображения в фильтре
     platforms = Platform.objects.all()
@@ -184,7 +252,8 @@ def HomeSortView2(request):
 
     # Передаем данные в шаблон
     return render(request, 'home2.html', {
-        'courses': courses,
+        #'courses': courses,
+        'page_obj': page_obj,
         'platforms': platforms,
         'categories': categories,
         'selected_categories': selected_categories,

@@ -63,33 +63,34 @@
                 <ul class="list-unstyled">
                     {% if courses.count != 0 %}
                         {% for f in courses %}
-                            <div class="card mb-3" style="max-width: 540px;">
+                            <div class="card mb-3" >
                               <div class="row g-0 ">
                                   <div class="card-body">
                                     <h5 class="card-title">{{ f.title }}</h5>
-                                    <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-outline-danger">Удалить курс</a>
-                                    <!-- Button trigger modal -->
-                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                      Launch demo modal
+                                    <p class="card-text">{{ f.summary }}</p>
+                                    <a href="{% url 'course' f.pk %}" class="btn btn-primary">Посмотреть</a>
+                                    <!-- Кнопка для открытия модального окна -->
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.pk }}">
+                                        Удалить курс
                                     </button>
 
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                      <div class="modal-dialog">
-                                        <div class="modal-content">
-                                          <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                          </div>
-                                          <div class="modal-body">
-                                            ...
-                                          </div>
-                                          <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-outline-danger">Удалить курс</a>
-                                          </div>
+                                    <!-- Модальное окно для подтверждения удаления -->
+                                    <div class="modal fade" id="deleteModal{{ f.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ f.pk }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ f.pk }}">Подтверждение удаления</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Вы уверены, что хотите удалить курс "{{ f.title }}"?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                    <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-danger">Удалить</a>
+                                                </div>
+                                            </div>
                                         </div>
-                                      </div>
                                     </div>
                                   </div>
                               </div>
