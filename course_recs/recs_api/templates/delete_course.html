@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Удалить курс</h1><br/>
+<p>Вы уверены, что хотите удалить курс из сохраненных?</p>
+<form method="post">
+    {% csrf_token %}
+    <br/><button type="submit" class="btn btn-danger">Удалить</button>
+</form>
+<br/><a href="{% url 'profile' user.pk %}" class="btn btn-dark">Назад в личный кабинет</a>
+
+{% endblock %}

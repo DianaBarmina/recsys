@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Первый контейнер (левая часть) - Информация о курсе -->
+        <div class="col-md-3 p-3">
+            <div class="container">
+                <h3>Информация о курсе</h3>
+                <br/>
+                <ul class="list-unstyled">
+                    <li><strong>Платформа:</strong> {{ course.platform.name }}</li>
+                    <li><strong>Язык:</strong> {{ course.language }}</li>
+                    <li><strong>Нагрузка:</strong> {{ course.workload }}</li>
+                    <li><strong>Ссылка:</strong> <a href="{{ course.canonical_url }}" target="_blank">{{ course.canonical_url }}</a></li>
+                    <li><strong>Дата публикации:</strong> {{ course.became_published_at|date:"d.m.Y H:i" }}</li>
+                    <li><strong>Время на прохождение:</strong> {{ course.time_to_complete }} часов</li>
+                    <li><strong>Платный:</strong> {% if course.is_paid %}Да{% else %}Нет{% endif %}</li>
+                    <li><strong>Категория:</strong> {{ course.category }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Второй контейнер (правая часть) - Детали курса -->
+        <div class="col-md-9 p-3">
+            <div class="container">
+                <!-- Верхний ряд (два маленьких контейнера) -->
+                <div class="row mb-3">
+                    <!-- Контейнер с заголовком -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h2 class="card-title">{{ course.title }}</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Контейнер с кратким описанием -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <p class="card-text">{{ course.summary }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Нижний ряд (один большой контейнер) -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Описание курса</h5>
+                                <p class="card-text">{{ course.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Кнопка "К курсам" -->
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'home' %}" class="btn btn-dark">К курсам</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul>
+{% for course in object_list %}
+
+
+    <div class="card mb-3" style="max-width: 540px;">
+      <div class="row g-0 ">
+          <div class="card-body">
+            <h5 class="card-title">{{ course.title }}</h5>
+              <p class="card-text">{{ course.summary }}</p>
+              <a href="{% url 'course' course.pk %}" class="btn btn-primary">Посмотреть</a>
+        </div>
+      </div>
+    </div>
+
+
+{% endfor %}
+</ul>
+{% endblock %}
