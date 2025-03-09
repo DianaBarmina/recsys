@@ -62,7 +62,7 @@ class UserCourse(models.Model):
     user = models.ForeignKey('UserStudent', on_delete=models.CASCADE)
     course = models.ForeignKey('Course', on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)  # всегда дата добавления в сервис
-    score = models.IntegerField(default=5)
+    score = models.FloatField(default=0.0)
 
     class Meta:
         constraints = [
@@ -81,3 +81,4 @@ class Recommendations(models.Model):
         default=list  # По умолчанию пустой список
     )
 
+    
