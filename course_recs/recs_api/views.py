@@ -1,8 +1,8 @@
-from .forms import UserStudentRegistrationForm, UserCourseForm, UserPlatformForm, UserStudentUpdateForm, UserStudentPasswordChangeForm
+from .forms import UserStudentRegistrationForm, UserCourseForm, UserPlatformForm, UsernameChangeForm, \
+    PasswordChangeCustomForm
 from .models import UserStudent, Platform, Course, UserCourse, UserPlatform
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
 from django.views import generic
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import logout
@@ -11,6 +11,8 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.views import View
 from .parsing.stepic import fetch_reviewed_courses
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 
 #def home(request):
@@ -29,13 +31,22 @@ class CourseDetailView(DetailView):
 
 
 def UserCoursesView(request, user_id):
-    courses = UserCourse.objects.filter(user=user_id, source='Native')
+    courses = UserCourse.objects.filter(user=user_id)#, source='Native')
     course = []
     for i in range(len(courses)):
         course.append(courses[i].course.pk)
     user_courses = Course.objects.filter(pk__in=course)
     user = get_object_or_404(UserStudent, pk=user_id)
-    return render(request, 'profile.html', {'courses': user_courses, 'user': user})
+
+    user_platforms = UserPlatform.objects.filter(user=user_id)
+    u_platform = []
+    for i in range(len(user_platforms)):
+        u_platform.append(user_platforms[i].platform.pk)
+    platforms = Platform.objects.filter(pk__in=u_platform)
+    return render(request, 'profile2.html', {'courses': user_courses,
+                                             'user': user,
+                                             'platforms': platforms
+                                             })
 
 
 class UserCourseDeleteView(DeleteView):
@@ -87,17 +98,25 @@ class CreateUserPlatformView(View):
         # Заполняем форму данными из POST-запроса
         form = UserPlatformForm(request.POST)
         if form.is_valid():
-            # Создаем объект UserPlatform, но не сохраняем его в базу
-            user_platform = form.save(commit=False)
-            user_platform.user = user  # Привязываем пользователя
-            user_platform.save()  # Сохраняем объект в базе
 
-            print('start----------------------------------')
-            user_platform_id = user_platform.user_platform_id
-            print(fetch_reviewed_courses(user_platform_id))
-            print('end--------------------------------------')
+            platform = form.cleaned_data['platform']  # Получаем платформу из формы
 
-            return redirect(reverse('profile', kwargs={'user_id': user_id}))# Перенаправляем на страницу успеха (замените на вашу)
+            # Проверяем, существует ли уже запись с таким пользователем и платформой
+            if UserPlatform.objects.filter(user=user, platform=platform).exists():
+                # Если запись уже существует, добавляем сообщение об ошибке
+                # form.add_error('platform', 'Эта платформа уже привязана к вашему аккаунту.')
+                messages.error(request, 'Эта платформа уже привязана к вашему аккаунту.')
+            else:
+                # Создаем объект UserPlatform, но не сохраняем его в базу
+                user_platform = form.save(commit=False)
+                user_platform.user = user  # Привязываем пользователя
+
+                user_platform.save()  # Сохраняем объект в базе
+
+                user_platform_id = user_platform.user_platform_id
+                fetch_reviewed_courses(user_platform_id)
+
+                return redirect(reverse('profile', kwargs={'user_id': user_id}))# Перенаправляем на страницу успеха (замените на вашу)
         return render(request, self.template_name, {'form': form, 'user': user})
 
 
@@ -172,6 +191,33 @@ def HomeSortView2(request):
         'selected_platforms': selected_platforms,
         'search_query': search_query,
     })
+
+
+@login_required
+def change_username(request):
+    if request.method == 'POST':
+        form = UsernameChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Имя пользователя успешно изменено!')
+            return redirect('profile', user_id=request.user.id)
+    else:
+        form = UsernameChangeForm(instance=request.user)
+    return render(request, 'profile2.html', {'username_form': form})
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeCustomForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Обновляем сессию, чтобы пользователь не вышел из системы
+            messages.success(request, 'Пароль успешно изменен!')
+            return redirect('profile', user_id=request.user.id)
+    else:
+        form = PasswordChangeCustomForm(request.user)
+    return render(request, 'profile2.html', {'password_form': form})
 
 
 '''@login_required

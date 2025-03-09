@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
 from .views import UserRegisterView, custom_logout, HomeSortView, CourseDetailView, UserCoursesView, \
-    UserCourseDeleteView, HomeSortView2, UserCourseCreateView,  CreateUserCourseView, CreateUserPlatformView
+    UserCourseDeleteView, HomeSortView2, UserCourseCreateView,  CreateUserCourseView, CreateUserPlatformView, \
+    change_username, change_password
 
 
 urlpatterns = [
@@ -16,4 +17,6 @@ urlpatterns = [
     #path('create/<int:course>/<int:user>/create', create_user_course, name='create-usercourse'),
     path('create/<int:course>/<int:user>/create', CreateUserCourseView.as_view(), name='create-usercourse'),
     path('user-platform/create/<int:user_id>/', CreateUserPlatformView.as_view(), name='create_user_platform'),
+    path('change-username/', change_username, name='change-username'),
+    path('change-password/', change_password, name='change-password'),
 ]

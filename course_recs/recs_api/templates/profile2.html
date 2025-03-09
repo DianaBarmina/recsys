@@ -1,0 +1,126 @@
+{% extends 'base.html' %}  <!-- Если у вас есть базовый шаблон -->
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Левая часть (25%) - Фильтрация и сортировка -->
+        <div class="col-3 p-3 border-end">
+            <div class="container">
+                <h2>Личный кабинет</h2>
+                <br/>
+                <h3>Login: {{ user.username }}</h3>
+                <br/>
+                <div class="accordion" id="accordionExample">
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        Изменить логин и пароль
+                      </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                      <div class="accordion-body">
+                          <form method="post" action="{% url 'change-username' %}">
+                                {% csrf_token %}
+                                Новый логин: {{ username_form.username }}
+                                <button type="submit" class="btn btn-primary mt-2">Изменить имя пользователя</button>
+                          </form>
+                          <form method="post" action="{% url 'change-password' %}">
+                            {% csrf_token %}
+                            Текущий пароль:   {{ password_form.old_password }}
+                            <br/>
+                            Новый пароль: {{ password_form.new_password1 }}
+                            <br/>
+                            Повторите новый пароль: {{ password_form.new_password2 }}
+                            <button type="submit" class="btn btn-primary mt-2">Изменить пароль</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <br/>
+                    <br/>
+                  <h4>Мои платформы</h4>
+                    <br/>
+                    {% if platforms.count != 0 %}
+                      {% for p in platforms %}
+                        <li><a href="{{ p.url }}">{{ p.name }}</a></li>
+                      {% endfor %}
+                    {% else %}
+                        <p>Вы не добавили платформы</p>
+                    {% endif %}
+                    <br/>
+                    <a href="{% url 'create_user_platform' user_id=user.pk %}" class="btn btn-outline-success">Добавить платформу</a>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Правая часть (75%) - Список курсов -->
+        <div class="col-9 p-3">
+            <div class="container">
+                <h3>Мои курсы</h3>
+                <br/><br/>
+                <ul class="list-unstyled">
+                    {% if courses.count != 0 %}
+                        {% for f in courses %}
+                            <div class="card mb-3" style="max-width: 540px;">
+                              <div class="row g-0 ">
+                                  <div class="card-body">
+                                    <h5 class="card-title">{{ f.title }}</h5>
+                                    <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-outline-danger">Удалить курс</a>
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                      Launch demo modal
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                      <div class="modal-dialog">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                          </div>
+                                          <div class="modal-body">
+                                            ...
+                                          </div>
+                                          <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-outline-danger">Удалить курс</a>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+                            </div>
+                    {% endfor %}
+                    </br>
+                    {% else %}
+                     <p>У вас нет сохраненных курсов</p>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Добавляем вертикальную линию между колонками */
+    .border-end {
+        border-right: 1px solid #dee2e6; /* Цвет линии */
+        padding-right: 20px; /* Отступ от линии для левой части */
+    }
+
+    /* Отступ от линии для правой части */
+    .col-9 {
+        padding-left: 20px;
+    }
+
+    /* Убираем лишние отступы у контейнеров */
+    .container {
+        padding-left: 0;
+        padding-right: 0;
+    }
+</style>
+{% endblock %}

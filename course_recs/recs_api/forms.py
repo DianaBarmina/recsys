@@ -41,14 +41,15 @@ class UserCourseForm(forms.ModelForm):
         exclude = ['user', 'course', 'source', 'date_added', 'score']
 
 
-class UserStudentUpdateForm(UserChangeForm):
+class UsernameChangeForm(forms.ModelForm):
     class Meta:
         model = UserStudent
         fields = ['username']
 
 
-class UserStudentPasswordChangeForm(PasswordChangeForm):
-    pass
+class PasswordChangeCustomForm(PasswordChangeForm):
+    class Meta:
+        model = UserStudent
 
 
 class UserPlatformForm(forms.ModelForm):

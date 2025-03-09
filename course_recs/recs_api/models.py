@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.fields import ArrayField
 
 
 class Platform(models.Model):
@@ -66,8 +67,17 @@ class UserCourse(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(source__in=[choice[0] for choice in GetSource.choices]),
+                check=models.Q( source__in=[choice[0] for choice in GetSource.choices]),
                 name='valid_source_check',
             ),
         ]
+
+
+class Recommendations(models.Model):
+    user = models.ForeignKey('UserStudent', on_delete=models.CASCADE)
+    recommended_courses = ArrayField(
+        models.IntegerField(),  # Поле для хранения ID курсов
+        blank=True,  # Поле может быть пустым
+        default=list  # По умолчанию пустой список
+    )
 
