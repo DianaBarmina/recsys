@@ -54,7 +54,7 @@ def UserCoursesView(request, user_id):
     course = []
     for i in range(len(courses)):
         course.append(courses[i].course.pk)
-    user_courses = Course.objects.filter(pk__in=course)
+    user_courses = Course.objects.filter(pk__in=course).order_by('date_added')
     user = get_object_or_404(UserStudent, pk=user_id)
 
     user_platforms = UserPlatform.objects.filter(user=user_id)
@@ -62,9 +62,15 @@ def UserCoursesView(request, user_id):
     for i in range(len(user_platforms)):
         u_platform.append(user_platforms[i].platform.pk)
     platforms = Platform.objects.filter(pk__in=u_platform)
+
+    paginator = Paginator(user_courses, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'profile2.html', {'courses': user_courses,
                                              'user': user,
-                                             'platforms': platforms
+                                             'platforms': platforms,
+                                             'page_obj': page_obj
                                              })
 
 
@@ -221,14 +227,14 @@ def HomeSortView2(request):
     # Фильтрация по нескольким категориям
     selected_categories = request.GET.getlist('category')
     selected_platforms = request.GET.getlist('platform')
-    search_query = request.GET.get('search')
+    search_query = request.GET.get('search', '')
 
     # Обрабатываем сброс фильтров
     reset_filters = request.GET.get('reset')
     if reset_filters:
         selected_categories = []
         selected_platforms = []
-        search_query = None
+        search_query = ''
 
     # Применяем фильтрацию, если фильтры не сброшены
     if selected_categories:
@@ -242,14 +248,13 @@ def HomeSortView2(request):
     # Применяем срез только после всех фильтров
     #courses = courses[:100]
         # Пагинация
-    paginator = Paginator(courses, 12)  # 10 курсов на странице
+    paginator = Paginator(courses, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # Получаем все платформы и уникальные категории для отображения в фильтре
     platforms = Platform.objects.all()
-    categories = Course.objects.values_list('category', flat=True).distinct()  # Уникальные категории
-
+    categories = Course.objects.exclude(category__isnull=True).values_list('category', flat=True).distinct()
     # Передаем данные в шаблон
     return render(request, 'home2.html', {
         #'courses': courses,
@@ -287,29 +292,3 @@ def change_password(request):
     else:
         form = PasswordChangeCustomForm(request.user)
     return render(request, 'profile2.html', {'password_form': form})
-
-
-'''@login_required
-def update_profile(request):
-    if request.method == 'POST':
-        form = UserStudentUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('profile')
-    else:
-        form = UserStudentUpdateForm(instance=request.user)
-    return render(request, 'update_profile.html', {'form': form})
-
-
-@login_required
-def change_password(request):
-    if request.method == 'POST':
-        form = UserStudentPasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            return redirect('profile')
-    else:
-        form = UserStudentPasswordChangeForm(request.user)
-    return render(request, 'change_password.html', {'form': form})
-'''
