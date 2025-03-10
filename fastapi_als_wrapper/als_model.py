@@ -82,6 +82,20 @@ class ALSRecommender:
             db (Session): SQLAlchemy database session.
             top_k (int): The number of items to recommend.
         """
+        # Get the set of current user IDs from the mapper
+        current_user_ids = set(self.user_to_index.keys())
+
+        # Query the database for all user IDs with existing recommendations
+        existing_user_ids = {
+            user_id for user_id, in db.query(Recommendations.user_id).all()
+        }
+
+        # Find user IDs that are in the database but not in the current mapper
+        users_to_delete = existing_user_ids - current_user_ids
+
+        # Delete recommendations for users not in the current mapper
+        db.query(Recommendations).filter(Recommendations.user_id.in_(users_to_delete)).delete(synchronize_session=False)
+
         recommendations = {}
         user_ids = list(self.user_to_index.keys())
 
@@ -102,9 +116,9 @@ class ALSRecommender:
 
             # Generate recommendations using the ALS model
             recommended_items, _ = self.model.recommend(user_index,
-                                                      self.model.user_factors,
-                                                      N=top_k + len(user_interacted_items),
-                                                      filter_already_liked_items=False)
+                                                    self.model.user_factors,
+                                                    N=top_k + len(user_interacted_items),
+                                                    filter_already_liked_items=False)
 
             # Convert recommended item indices to item IDs
             recommended_items = [self.index_to_item[idx] for idx in recommended_items
@@ -112,13 +126,9 @@ class ALSRecommender:
 
             recommendations[user_id] = recommended_items
 
-            # Update recommendations in the database
-            existing_recommendation = db.query(Recommendations).filter(Recommendations.user_id == user_id).first()
-            if existing_recommendation:
-                existing_recommendation.recommended_courses = recommended_items
-            else:
-                new_recommendation = Recommendations(user_id=user_id, recommended_courses=recommended_items)
-                db.add(new_recommendation)
+            # Insert new recommendations into the database
+            new_recommendation = Recommendations(user_id=user_id, recommended_courses=recommended_items)
+            db.add(new_recommendation)
 
         db.commit()
         logger.info("Recommendations updated successfully.")
