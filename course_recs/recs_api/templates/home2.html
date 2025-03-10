@@ -6,36 +6,44 @@
         <!-- Левая часть (Фильтры) -->
         <div class="col-3 p-3 border-end">
             <div class="container">
-                <h5>Фильтры и сортировка</h5>
+                <h5>Фильтрация</h5>
                 <form method="get" action="{% url 'home' %}">
                     <!-- Поле поиска -->
                     <div class="mb-3">
-                        <label for="search" class="form-label">Поиск по названию:</label>
+                        <label for="search" class="form-label"><strong>Поиск по названию:</strong></label>
                         <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}">
                     </div>
 
                     <!-- Фильтр по категориям -->
                     <div class="mb-3">
-                        <label for="category" class="form-label">Категории:</label>
-                        <select name="category" id="category" class="form-select" multiple>
+                        <label class="form-label"><strong>Категории:</strong></label>
+                        <div class="form-check">
                             {% for category in categories %}
-                                <option value="{{ category }}" {% if category in selected_categories %}selected{% endif %}>
-                                    {{ category }}
-                                </option>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="category" id="category{{ forloop.counter }}"
+                                           value="{{ category }}" {% if category in selected_categories %}checked{% endif %}>
+                                    <label class="form-check-label" for="category{{ forloop.counter }}">
+                                        {{ category }}
+                                    </label>
+                                </div>
                             {% endfor %}
-                        </select>
+                        </div>
                     </div>
 
                     <!-- Фильтр по платформам -->
                     <div class="mb-3">
-                        <label for="platform" class="form-label">Платформы:</label>
-                        <select name="platform" id="platform" class="form-select" multiple>
+                        <label class="form-label"><strong>Платформы:</strong></label>
+                        <div class="form-check">
                             {% for platform in platforms %}
-                                <option value="{{ platform.id }}" {% if platform.id|stringformat:"s" in selected_platforms %}selected{% endif %}>
-                                    {{ platform.name }}
-                                </option>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="platform" id="platform{{ forloop.counter }}"
+                                           value="{{ platform.id }}" {% if platform.id|stringformat:"s" in selected_platforms %}checked{% endif %}>
+                                    <label class="form-check-label" for="platform{{ forloop.counter }}">
+                                        {{ platform.name }}
+                                    </label>
+                                </div>
                             {% endfor %}
-                        </select>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Применить фильтры</button>
@@ -58,12 +66,12 @@
                             <div class="card h-100 d-flex flex-column">
                                 <div class="card-body flex-grow-1">
                                     <h5 class="card-title">{{ course.title }}</h5>
-                                    <p class="card-text">{{ course.summary }}</p>
+                                    <p class="card-text">{{ course.summary|truncatechars:150 }}</p>
                                 </div>
                                 <div class="card-footer">
                                     <a href="{% url 'course' course.pk %}" class="btn btn-primary">Посмотреть</a>
                                     {% if user.is_authenticated %}
-                                        <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary">Сохранить</a>
+                                        <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary" onclick="showToast()">Сохранить</a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -85,21 +93,21 @@
                             </li>
                             <li class="page-item">
                                 <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Предыдущая">
-                                    <span aria-hidden="true">&laquo;</span>
+                                    <span aria-hidden="true">{{ page_obj.previous_page_number }}</span>
                                 </a>
                             </li>
                         {% endif %}
 
                         <li class="page-item active">
                             <span class="page-link">
-                                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                                 {{ page_obj.number }}
                             </span>
                         </li>
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
                                 <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Следующая">
-                                    <span aria-hidden="true">&raquo;</span>
+                                    <span aria-hidden="true">{{ page_obj.next_page_number }}</span>
                                 </a>
                             </li>
                             <li class="page-item">
