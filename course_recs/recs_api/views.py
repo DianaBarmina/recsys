@@ -42,7 +42,7 @@ class CourseDetailView(DetailView):
 
 
 def UserCoursesView(request, user_id):
-    courses = UserCourse.objects.filter(user=user_id).exclude(score=-1)#, source='Native')
+    courses = UserCourse.objects.filter(user=user_id).exclude(score=-1).exclude(score=-2)#, source='Native')
     course = []
     for i in range(len(courses)):
         course.append(courses[i].course.pk)
