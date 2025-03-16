@@ -50,7 +50,7 @@ class CourseDetailView(DetailView):
 
 
 def UserCoursesView(request, user_id):
-    courses = UserCourse.objects.filter(user=user_id)#, source='Native')
+    courses = UserCourse.objects.filter(user=user_id).exclude(score=-1)#, source='Native')
     course = []
     for i in range(len(courses)):
         course.append(courses[i].course.pk)
@@ -80,6 +80,15 @@ def delete_course(request, user_id, pk):
     user_course.delete()
     messages.success(request, 'Курс успешно удален')
     #return redirect(reverse('profile', kwargs={'user_id': user_id}))
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+def delete_course2(request, user_id, pk):
+    # Получаем курс пользователя
+    user_course = get_object_or_404(UserCourse, user_id=user_id, course_id=pk)
+    user_course.score = -1
+    user_course.save()
+    messages.success(request, 'Курс успешно удален')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
@@ -219,7 +228,7 @@ def HomeSortView2(request):
             # Если рекомендаций нет, выбираем топ-100 популярных курсов
             courses = Course.objects.annotate(student_count=Count('usercourse')).order_by('-student_count')
 
-        saved_courses = UserCourse.objects.filter(user=user).values_list('course_id', flat=True)
+        saved_courses = UserCourse.objects.filter(user=user).exclude(score=-1).values_list('course_id', flat=True)
         courses = courses.exclude(id__in=saved_courses)
     else:
         courses = Course.objects.all()
