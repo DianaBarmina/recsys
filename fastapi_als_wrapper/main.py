@@ -28,7 +28,7 @@ def get_db():
     finally:
         db.close()
 
-def train_and_recommend(db: Session, top_k: int = 100):
+def train_and_recommend(db: Session, top_k: Optional[int] = None):
     logger.info("Starting ALS model training and recommendation generation.")
     try:
         als_recommender.train(db)
@@ -36,7 +36,7 @@ def train_and_recommend(db: Session, top_k: int = 100):
     except Exception as e:
         logger.error(f"Error during ALS model training or recommendation generation: {e}")
 
-schedule.every(1).minutes.do(lambda: train_and_recommend(next(get_db()), top_k=100))
+schedule.every(1).minutes.do(lambda: train_and_recommend(next(get_db()), top_k=None))
 
 def run_scheduler():
     while True:
@@ -50,4 +50,4 @@ scheduler_thread.start()
 def startup_event():
     logger.info("Application startup: Training ALS model.")
     db = next(get_db())
-    train_and_recommend(db, top_k=100)
+    train_and_recommend(db, top_k=None)

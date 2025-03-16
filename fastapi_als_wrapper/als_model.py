@@ -22,7 +22,7 @@ class ALSRecommender:
             iterations (int): Number of ALS iterations.
             regularization (float): Regularization parameter.
             random_state (int): Seed for reproducibility.
-            negatives_discount (float): Discount factor for negatively (deleted form favs) interacted items.
+            negatives_discount (float): Discount factor for negatively (deleted from favs) interacted items.
         """
         self.factors = factors
         self.iterations = iterations
@@ -75,13 +75,13 @@ class ALSRecommender:
                                                           random_state=self.random_state)
         self.model.fit(user_item_matrix)
 
-    def recommend(self, db: Session, top_k: int = 100, batch_size: int = 3000):
+    def recommend(self, db: Session, top_k: int = 100, batch_size: int = 1000):
         """
         Recommend top-k items for all users using the trained ALS model.
 
         Args:
             db (Session): SQLAlchemy database session.
-            top_k (int): The number of items to recommend.
+            top_k (int): The number of items to recommend. If None, recommend all items.
             batch_size (int): The number of users to process in each batch.
         """
         # Get the set of current user IDs from the mapper
@@ -135,8 +135,15 @@ class ALSRecommender:
                 mask[user_negatively_interacted_items] = True
                 scores[i, mask] *= self.negatives_discount
 
+                # Determine the number of recommendations
+                if top_k is None:
+                    top_k = len(self.item_catalog)
+                    tmp_top_k = top_k
+                else:
+                    top_k = min(top_k, len(self.item_catalog))
+                    tmp_top_k = min(top_k + len(user_positively_interacted_items), len(self.item_catalog))
+
                 # Get top-k recommendations
-                tmp_top_k = top_k + len(user_positively_interacted_items)
                 top_k_indices = np.argpartition(scores[i], -tmp_top_k)[-tmp_top_k:]
                 top_k_items = [self.index_to_item[idx] for idx in top_k_indices if idx not in user_positively_interacted_items]
 
