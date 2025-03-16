@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ALSRecommender:
-    def __init__(self, factors=110, iterations=20, regularization=0.01, random_state=42, negatives_discount=0.8):
+    def __init__(self, factors=110, iterations=20, regularization=0.01, random_state=42, negatives_discount=0.2):
         """
         Initialize the ALSRecommender.
 
@@ -75,7 +75,7 @@ class ALSRecommender:
                                                           random_state=self.random_state)
         self.model.fit(user_item_matrix)
 
-    def recommend(self, db: Session, top_k: int = 100, batch_size: int = 1000):
+    def recommend(self, db: Session, top_k: int = 100, batch_size: int = 3000):
         """
         Recommend top-k items for all users using the trained ALS model.
 
@@ -145,10 +145,18 @@ class ALSRecommender:
 
                 # Get top-k recommendations
                 top_k_indices = np.argpartition(scores[i], -tmp_top_k)[-tmp_top_k:]
-                top_k_items = [self.index_to_item[idx] for idx in top_k_indices if idx not in user_positively_interacted_items]
+                top_k_items = [self.index_to_item[idx] for idx in top_k_indices if idx not in user_positively_interacted_items][:top_k]
 
-                # Insert new recommendations into the database
-                new_recommendation = Recommendations(user_id=user_id, recommended_courses=top_k_items[:top_k])
-                db.add(new_recommendation)
+                # Check if a recommendation for the user_id already exists
+                existing_recommendation = db.query(Recommendations).filter_by(user_id=user_id).first()
 
-            db.commit()
+                if existing_recommendation:
+                    # Update the existing recommendation
+                    existing_recommendation.recommended_courses = top_k_items
+                else:
+                    # Insert a new recommendation
+                    new_recommendation = Recommendations(user_id=user_id, recommended_courses=top_k_items)
+                    db.add(new_recommendation)
+
+                # Commit the transaction
+                db.commit()
