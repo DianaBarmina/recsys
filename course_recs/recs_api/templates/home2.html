@@ -7,7 +7,13 @@
         <div class="col-3 p-3 border-end">
             <div class="container">
                 <h5>Фильтрация</h5>
-                <form method="get" action="{% url 'home' %}">
+                {% if get_not_all %}
+                    {% url 'home' as form_action %}
+                {% else %}
+                    {% url 'all-courses' as form_action %}
+                {% endif %}
+
+                <form method="get" action="{{ form_action }}">
                     <!-- Поле поиска -->
                     <div class="mb-3">
                         <label for="search" class="form-label"><strong>Поиск по названию:</strong></label>
@@ -49,7 +55,7 @@
                     <button type="submit" class="btn btn-primary">Применить фильтры</button>
                     <br><br>
                     <a href="?reset=true">
-                        <button type="button" class="btn btn-danger">Сбросить фильтры</button>
+                        <button type="button" class="btn btn-orange-500">Сбросить фильтры</button>
                     </a>
                 </form>
             </div>
@@ -58,20 +64,35 @@
         <!-- Правая часть (Список курсов) -->
         <div class="col-9 p-3">
             <div class="container">
-                <h1>Все курсы</h1>
+                <h1>Курсы</h1>
                 <br/>
                 <div class="row">
                     {% for course in page_obj %}
-                        <div class="col-md-4 mb-4">
+                        <div class="col-md-4 mb-4 position-relative">
                             <div class="card h-100 d-flex flex-column">
+                                <!-- Кнопка "Неинтересно" -->
+                                {% if get_not_all %}
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'create-usercourse' course=course.pk user=user.pk score='-2.0' %}"
+                                       class="btn btn-outline-dark btn-sm position-absolute top-0 start-0 m-2 p-1"
+                                       onclick="showToast()">
+                                        Неинтересно <i class="bi bi-x-lg"></i>
+                                    </a>
+                                <br/>
+                                <br/>
+                                {% endif %}
+                                {% endif %}
+
                                 <div class="card-body flex-grow-1">
                                     <h5 class="card-title">{{ course.title }}</h5>
                                     <p class="card-text">{{ course.summary|truncatechars:150 }}</p>
                                 </div>
                                 <div class="card-footer">
                                     <a href="{% url 'course' course.pk %}" class="btn btn-primary">Посмотреть</a>
+                                    {% if get_not_all %}
                                     {% if user.is_authenticated %}
-                                        <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary" onclick="showToast()">Сохранить</a>
+                                        <a href="{% url 'create-usercourse' course=course.pk user=user.pk score='1.0' %}" class="btn btn-orange-500" onclick="showToast()">Сохранить</a>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -86,32 +107,37 @@
                 <nav aria-label="Навигация по страницам">
                     <ul class="pagination justify-content-center">
                         {% if page_obj.has_previous %}
+                            <!-- Ссылка на первую страницу -->
                             <li class="page-item">
-                                <a class="page-link" href="?page=1" aria-label="Первая">
+                                <a class="page-link" href="?page=1&{{ filter_params }}" aria-label="Первая">
                                     <span aria-hidden="true">&laquo;&laquo;</span>
                                 </a>
                             </li>
+                            <!-- Ссылка на предыдущую страницу -->
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Предыдущая">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ filter_params }}" aria-label="Предыдущая">
                                     <span aria-hidden="true">{{ page_obj.previous_page_number }}</span>
                                 </a>
                             </li>
                         {% endif %}
 
+                        <!-- Текущая страница -->
                         <li class="page-item active">
                             <span class="page-link">
-                                 {{ page_obj.number }}
+                                {{ page_obj.number }}
                             </span>
                         </li>
 
                         {% if page_obj.has_next %}
+                            <!-- Ссылка на следующую страницу -->
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Следующая">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ filter_params }}" aria-label="Следующая">
                                     <span aria-hidden="true">{{ page_obj.next_page_number }}</span>
                                 </a>
                             </li>
+                            <!-- Ссылка на последнюю страницу -->
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Последняя">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ filter_params }}" aria-label="Последняя">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
