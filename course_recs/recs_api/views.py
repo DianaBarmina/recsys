@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
+from django.db.models import Case, When
 
 
 class UserRegisterView(CreateView):
@@ -269,7 +270,10 @@ def HomeSortView2(request):
                                                                                         flat=True).first()
 
         if recommended_courses_ids:
-            courses = Course.objects.filter(id__in=recommended_courses_ids)
+            #courses = Course.objects.filter(id__in=recommended_courses_ids)
+            courses = Course.objects.filter(id__in=recommended_courses_ids).order_by(
+                Case(*[When(id=course_id, then=pos) for pos, course_id in enumerate(recommended_courses_ids)])
+            )
         else:
             # Если рекомендаций нет, выбираем топ-100 популярных курсов
             courses = Course.objects.annotate(student_count=Count('usercourse')).order_by('-student_count')
