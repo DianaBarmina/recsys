@@ -5,6 +5,7 @@ import sys
 
 # Добавляем путь к проекту в sys.path
 project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+print(project_path)
 sys.path.append(project_path)
 
 # Указываем Django, какие настройки использовать
@@ -120,9 +121,8 @@ def export_users(df):
 
 
 if __name__ == "__main__":
-    courses = pd.read_csv('df/courses_export.csv')
+    courses = pd.read_csv('recs_api/parsing/df/courses_export.csv')
     export_courses(courses)
 
-    reviews = pd.read_csv('df/reviews_export.csv')
-    reviews['score'] /= 5
+    reviews = pd.read_csv('recs_api/parsing/df/reviews_export.csv')
     export_users(reviews)
