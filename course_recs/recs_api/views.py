@@ -272,7 +272,7 @@ def HomeSortView2(request):
         if recommended_courses_ids:
             #courses = Course.objects.filter(id__in=recommended_courses_ids)
             courses = Course.objects.filter(id__in=recommended_courses_ids).order_by(
-                Case(*[When(id=course_id, then=pos) for pos, course_id in enumerate(recommended_courses_ids)])
+                Case(*[When(id=course_id, then=-pos) for pos, course_id in enumerate(recommended_courses_ids)])
             )
         else:
             # Если рекомендаций нет, выбираем топ-100 популярных курсов
