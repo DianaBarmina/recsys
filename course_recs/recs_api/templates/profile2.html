@@ -37,6 +37,31 @@
                     </div>
                   </div>
                   <br/>
+
+                    <!-- Кнопка для удаления аккаунта -->
+                    <button type="button" class="btn btn-orange-500" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        Удалить аккаунт
+                    </button>
+
+                    <!-- Модальное окно подтверждения -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                    <a href="{% url 'delete_user' user.id %}" class="btn btn-orange-500">Удалить</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
                     <br/>
                   <h4>Мои платформы</h4>
                     <br/>
@@ -48,7 +73,7 @@
                         <p>Вы не добавили платформы</p>
                     {% endif %}
                     <br/>
-                    <a href="{% url 'create_user_platform' user_id=user.pk %}" class="btn btn-outline-success">Добавить платформу</a>
+                    <a href="{% url 'create_user_platform' user_id=user.pk %}" class="btn btn-primary">Добавить платформу</a>
 
                 </div>
             </div>
@@ -72,7 +97,7 @@
                                     <div class="card-footer bg-transparent border-top-0">
                                         <a href="{% url 'course' f.pk %}" class="btn btn-primary">Посмотреть</a>
                                         <!-- Кнопка для открытия модального окна -->
-                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.pk }}">
+                                        <button type="button" class="btn btn-orange-500" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.pk }}">
                                             Удалить курс
                                         </button>
                                     </div>
@@ -90,7 +115,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                                    <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-danger">Удалить</a>
+                                                    <a href="{% url 'delete-course' user_id=user.pk pk=f.pk %}" class="btn btn-orange-500">Удалить</a>
                                                 </div>
                                             </div>
                                         </div>

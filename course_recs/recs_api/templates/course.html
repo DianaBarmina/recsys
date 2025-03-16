@@ -20,7 +20,7 @@
                 {% if user.is_authenticated %}
                     {% if is_course_saved %}
                         <div class="container-fluid mt-3">
-                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.pk }}">
+                            <button type="button" class="btn btn-orange-500" data-bs-toggle="modal" data-bs-target="#deleteModal{{ f.pk }}">
                                         Удалить курс
                                     </button>
 
@@ -37,7 +37,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                                    <a href="{% url 'delete-course' user_id=user.pk pk=course.pk %}" class="btn btn-danger">Удалить</a>
+                                                    <a href="{% url 'delete-course' user_id=user.pk pk=course.pk %}" class="btn btn-orange-500">Удалить</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -47,7 +47,7 @@
                         <div class="container-fluid mt-3">
                             <div class="row">
                                 <div class="col-md-12 text-center">
-                                    <a href="{% url 'create-usercourse' course=course.pk user=user.pk %}" class="btn btn-primary">Сохранить курс</a>
+                                    <a href="{% url 'create-usercourse' course=course.pk user=user.pk score='1.0' %}" class="btn btn-primary">Сохранить курс</a>
                                 </div>
                             </div>
                         </div>
@@ -57,7 +57,7 @@
                 <br/><br/><br/>
                 <!-- Кнопка "К курсам" -->
 
-                            <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn btn-dark">Назад</a>
+                            <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn btn-orange-500">Назад</a>
 
             </div>
         </div>
@@ -71,7 +71,7 @@
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h2 class="card-title"> <a href="{{ course.canonical_url }}"> {{ course.title }}</h2></a>
+                                <h2 class="card-title" > <a href="{{ course.canonical_url }}" class="orange-link"> {{ course.title }}</h2></a>
                             </div>
                         </div>
                     </div>

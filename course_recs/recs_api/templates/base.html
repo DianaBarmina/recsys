@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bootstrap demo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <style>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+      <style>
       /* Пользовательский стиль для отступа навигационного меню */
       .navbar-nav-custom {
         padding-left: 130px; /* Отступ слева 20px */
@@ -14,7 +15,7 @@
   </head>
   <body>
 
-    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg bg-orange" data-bs-theme="dark">
       <div class="container-fluid">
         <a class="navbar-brand navbar-nav-custom" href="{% url 'home' %}">Course Recommender</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +25,9 @@
           <ul class="navbar-nav ">
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Курсы для вас</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'all-courses' %}">Все курсы</a>
             </li>
             {% if user.is_authenticated %}
               <li class="nav-item">
@@ -65,6 +69,32 @@
             </div>
         </div>
     </div>
+    <style>
+        /* Определяем кастомный цвет */
+        .btn-orange-500 {
+            background-color: #fd7e14; /* orange-500 */
+            border-color: #fd7e14;
+            color: white;
+        }
+
+        :root {
+        --orange-500: #fd7e14; /* Кастомный оранжевый цвет */
+        }
+
+        .orange-link {
+        color: var(--orange-500); /* Используем переменную */
+        }
+
+        .bg-orange {
+        background-color: #fd7e14; /* Оранжевый цвет */
+        }
+
+        /* Стили при наведении */
+        .btn-orange-500:hover {
+            background-color: #e59400; /* Темнее при наведении */
+            border-color: #e59400;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
   </body>
 </html>
