@@ -7,12 +7,12 @@ services:
     restart: always
     environment:
       POSTGRES_DB: course_recommendation
-      POSTGRES_USER: ubuntu
-      POSTGRES_PASSWORD: qwerty12345
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./db:/var/lib/postgresql/data
 
   web:
     build: .
@@ -31,8 +31,8 @@ services:
       - db
     environment:
       - DB_NAME=course_recommendation
-      - DB_USER=ubuntu
-      - DB_PASSWORD=qwerty12345
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
       - DB_HOST=db
       - DB_PORT=5432
 
@@ -49,10 +49,8 @@ services:
       - db
     environment:
       - DB_NAME=course_recommendation
-      - DB_USER=ubuntu
-      - DB_PASSWORD=qwerty12345
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
       - DB_HOST=db
       - DB_PORT=5432
 
-volumes:
-  postgres_data:
