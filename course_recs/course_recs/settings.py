@@ -92,7 +92,7 @@ DATABASES = {
         'NAME': 'course_recommendation',
         'USER': USER,
         'PASSWORD': PASSWORD,
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
