@@ -1,0 +1,81 @@
+version: '3.8'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:15
+    container_name: recs-db
+    restart: always
+    environment:
+      POSTGRES_DB: course_recommendation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  web:
+    build:
+      context: ./course_recs
+    container_name: recs-app
+    command: >
+      sh -c "
+      python ./course_recs/manage.py makemigrations &&
+      python ./course_recs/manage.py migrate &&
+      python ./course_recs/manage.py runserver 0.0.0.0:8000
+      "
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=course_recommendation
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    networks:
+      - app-network
+
+  als:
+    build:
+      context: ./fastapi_als_wrapper
+    container_name: als-app
+    environment:
+      - DB_NAME=course_recommendation
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # data-loader:
+  #   build: .
+  #   container_name: recs-loader
+  #   command: >
+  #     sh -c "
+  #     sleep 10 && 
+  #     python recs_api/parsing/exporter.py
+  #     "
+  #   depends_on:
+  #     - web
+  #     - db
+  #   environment:
+  #     - DB_NAME=course_recommendation
+  #     - DB_USER=postgres
+  #     - DB_PASSWORD=postgres
+  #     - DB_HOST=db
+  #     - DB_PORT=5432

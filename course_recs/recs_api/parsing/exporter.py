@@ -19,6 +19,9 @@ from recs_api.models import Course, Platform, UserStudent, UserPlatform, UserCou
 
 
 def export_courses(df):
+    pl = Platform(name='Stepik', url='https://stepik.org')
+    pl.save()
+    
     for i in range(len(df)):
         title = df.iat[i, df.columns.get_loc('title')]
         language = df.iat[i, df.columns.get_loc('language')]
