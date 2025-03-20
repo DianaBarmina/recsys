@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, DateTime, Boolean, Text, Table, CheckConstraint, Enum
+    Column, Integer, Float, String, ForeignKey, DateTime, Boolean, Text, Table, CheckConstraint, Enum
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -48,7 +48,7 @@ class UserCourse(Base):
     course_id = Column(Integer, ForeignKey('recs_api_course.id'), nullable=False)
     source = Column(Enum('Native', 'External', name='source_enum'), nullable=False)
     date_added = Column(DateTime, default=datetime.utcnow)
-    score = Column(Integer, default=5)
+    score = Column(Float, default=1)
 
     __table_args__ = (
         CheckConstraint(
