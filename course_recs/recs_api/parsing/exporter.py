@@ -78,7 +78,6 @@ def export_courses(df):
 
 
 def export_users(df):
-
     unique_users = df['stepik_user_id'].unique().tolist()
 
     for i in unique_users:
@@ -124,8 +123,8 @@ def export_users(df):
 
 
 if __name__ == "__main__":
-    courses = pd.read_csv('recs_api/parsing/df/courses_export.csv')
+    courses = pd.read_csv('./course_recs/recs_api/parsing/df/courses_export.csv')
     export_courses(courses)
 
-    reviews = pd.read_csv('recs_api/parsing/df/reviews_export.csv')
+    reviews = pd.read_csv('./course_recs/recs_api/parsing/df/reviews_export.csv')
     export_users(reviews)
