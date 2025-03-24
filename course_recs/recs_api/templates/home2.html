@@ -64,7 +64,11 @@
         <!-- Правая часть (Список курсов) -->
         <div class="col-9 p-3">
             <div class="container">
-                <h1>Курсы</h1>
+                {% if get_not_all %}
+                    <h1>Курсы для вас</h1>
+                {% else %}
+                    <h1>Все курсы</h1>
+                {% endif %}
                 <br/>
                 <div class="row">
                     {% for course in page_obj %}
